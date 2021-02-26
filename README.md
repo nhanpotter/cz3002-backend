@@ -18,3 +18,8 @@ python manage.py runserver
 //with port
 python manage.py runserver 8080
 ```
+# use .env for email, tehn runserver
+//in terminal
+$ source .env
+```
+
