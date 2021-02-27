@@ -11,6 +11,7 @@ mysqlclient = "2.0.3"
 djangorestframework = "3.12.2"
 bcrypt = "3.2.0"
 djangorestframework-simplejwt= "4.6.0"
+drf-yasg = "1.20.0"
 
 [requires]
 python_version = "3.9.1"
