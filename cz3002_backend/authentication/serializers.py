@@ -10,19 +10,32 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import smart_str,force_str,smart_bytes,DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode,urlsafe_base64_encode
 from .utils import Util
-
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+from django.contrib.auth.models import Group
+class GroupSerializer(serializers.ModelSerializer):    
+    class Meta:
+        model = Group
+        fields = ('name',)
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(max_length=255,min_length=3,write_only=True)
+    user_role= serializers.CharField(max_length=10,min_length=1,write_only=True)
 
     class Meta:
         model=User
-        fields=['email','username','password','working_address',"phone_number"]
+        fields=['email','username','password','working_address',"phone_number",'user_role']
 
     def validate(self,attrs):
         email= attrs.get('email','')
         username=attrs.get('username','')
-
-        #check exception below
+        phone_number=attrs.get('phone_number','')
+        if not phone_number.isnumeric():
+            raise serializers.ValidationError({'message':'Invalid phone number'})
+    
+        user_role=attrs.get('user_role','')
+        group=Group.objects.filter(name=user_role).first()
+        print(group)
+        if not group:
+            raise serializers.ValidationError({'message':'Invalid user_role'})
 
         return attrs
     
@@ -51,9 +64,7 @@ class LoginSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         email = attrs.get('email', '')
         password = attrs.get('password', '')
-        filtered_user_by_email = User.objects.filter(password=password,email=email)
-        print(email+" "+password)
-        print(filtered_user_by_email)
+        #filtered_user_by_email = User.objects.filter(password=password,email=email)
         user = EmailAuthBackend.authenticate(email=email, password=password)
 
         if not user:
@@ -106,3 +117,19 @@ class SetNewPasswordSerializer(serializers.Serializer):
 
         return super().validate(attrs)
 
+class LogoutSerializer(serializers.Serializer):
+    refresh = serializers.CharField()
+
+    default_error_message = {
+        'bad_token': ('Token is expired or invalid')
+    }
+
+    def validate(self, attrs):
+        self.token = attrs['refresh']
+        return attrs
+
+    def save(self, **kwargs):
+        try:
+            RefreshToken(self.token).blacklist()
+        except TokenError:
+            self.fail('bad_token')

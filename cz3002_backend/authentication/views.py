@@ -1,13 +1,12 @@
 from re import T
 from django.shortcuts import render
-from rest_framework import status, generics, views
-from rest_framework import serializers
+from rest_framework import status, generics, views, permissions
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 from rest_framework_simplejwt.tokens import RefreshToken
 # Create your views here.
-from .serializers import SetNewPasswordSerializer, EmailVerificationSerializer, RegisterSerializer, LoginSerializer, RequestPasswordResetEmailSerializer
+from .serializers import LogoutSerializer, SetNewPasswordSerializer, EmailVerificationSerializer, RegisterSerializer, LoginSerializer, RequestPasswordResetEmailSerializer
 from .models import User
 from .utils import Util
 import jwt
@@ -22,8 +21,10 @@ from django.utils.encoding import smart_str,force_str,smart_bytes,DjangoUnicodeD
 from django.utils.http import urlsafe_base64_decode,urlsafe_base64_encode
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
+from .renderers import ErrorRenderer
 class RegisterView(generics.GenericAPIView):
     serializer_class=RegisterSerializer
+    renderer_classes=(ErrorRenderer,)
 
     def post(self,request):
         #todo add bcrypt to password
@@ -46,7 +47,7 @@ class RegisterView(generics.GenericAPIView):
         absurl='http://'+current_site+reverse('email-verify')+'?token='+str(token)
         email_body=email_body = 'Hi '+user.username + ' Use the link below to verify your email \n' + absurl
         data={'to_email':user.email,'subject':'verify your email','body':email_body}
-        Util.send_email(data)
+        #Util.send_email(data)
         
         return Response(user_data,status=status.HTTP_201_CREATED)
 
@@ -77,6 +78,8 @@ class LoginAPIView(generics.GenericAPIView):
     #authentication_classes = ()
     #permission_classes = ()
     serializer_class=LoginSerializer
+    renderer_classes=(ErrorRenderer,)
+
 
     def post(self,request):
         serializer=self.serializer_class(data=request.data)
@@ -134,8 +137,18 @@ class SetNewPasswordView(generics.GenericAPIView):
     def patch(self,request):
         serializer=self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        return Response({"success":True,
-                            'message':'Password reset success'},status=status.HTTP_200_OK)
+        return Response({"success":True,'message':'Password reset success'},status=status.HTTP_200_OK)
 
 
+class LogoutAPIView(generics.GenericAPIView):
+    serializer_class = LogoutSerializer
 
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)

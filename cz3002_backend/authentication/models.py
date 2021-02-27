@@ -3,11 +3,12 @@ from django.db import models
 # Create your models here.
 from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager, PermissionsMixin)
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.models import Group
 
 
 class UserManager(BaseUserManager):
 
-    def create_user(self, username, email,phone_number, password=None,working_address=None):
+    def create_user(self, username, email,phone_number,user_role, password=None,working_address=None):
         if username is None:
             raise TypeError('Users should have a username')
         if email is None:
@@ -17,7 +18,12 @@ class UserManager(BaseUserManager):
 
         user = self.model(username=username, email=self.normalize_email(email),phone_number=phone_number,working_address=working_address)
         user.set_password(password)
+
+        #add group
+        group=Group.objects.get(name=user_role)
         user.save()
+        user.groups.add(group)
+        
         return user
 
     def create_superuser(self, username, email, password=None):
