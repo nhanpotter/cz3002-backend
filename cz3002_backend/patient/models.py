@@ -1,4 +1,4 @@
-from authentication.models import User
+from cz3002_backend.authentication.models import User
 from django.db import models
 from django.db.models.fields.related import ForeignKey
 # Create your views here.
@@ -9,6 +9,10 @@ from django.db.models.fields.related import ForeignKey
 #     Errors (int)
 #     Time taken to complete (long - milliseconds)
 #     Date time complete
+
+
+class Patient(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
 
 
 #user will connect this class
