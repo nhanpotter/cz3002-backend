@@ -11,6 +11,10 @@ from django.db.models.fields.related import ForeignKey
 #     Date time complete
 
 
+class Patient(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+
 #user will connect this class
 class GameTest(models.Model):
     user=models.ForeignKey(User,on_delete=models.CASCADE)
