@@ -1,11 +1,12 @@
+from .renderers import ErrorRenderer
 from .models import GameTest
-from .serializers import GameTestSerializer
+from .serializers import GameTestSerializer, TrailMakingSerializer, PictureObjectMatchingSerializer
 from django.http.response import JsonResponse
 from django.shortcuts import render
 from django.views import generic
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView, RetrieveUpdateAPIView
 from rest_framework import serializers, status
-from .models import User
+from authentication.models import User
 
 # patient
 # Get api/v1//patient/test_id
@@ -63,25 +64,39 @@ class TestCreateView(CreateAPIView):
     
 
 
-class TrailMatchCreateView(CreateAPIView):
+class TrailMakingCreateView(CreateAPIView):
+    serializer_class=TrailMakingSerializer
+    renderer_classes=(ErrorRenderer,)
     def post(self, request, uid, tid):
-        return JsonResponse({"error":"under developemnt"},status=status.HTTP_400_BAD_REQUEST)
+        serializer=self.serializer_class(data=request.data,context={'user_id': uid,'test_id':tid})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        data=serializer.data
+        return JsonResponse(data,status=status.HTTP_201_CREATED)
 
-class TrailMatchGetUpdateView(RetrieveUpdateAPIView):
+class TrailMakingGetUpdateView(RetrieveUpdateAPIView):
+    serializer_class=TrailMakingSerializer
+
     def get(self, request,id):
         return JsonResponse({"error":"under developemnt"},status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, *args, **kwargs):
         return JsonResponse({"error":"under developemnt"},status=status.HTTP_400_BAD_REQUEST)
 
-class TrailMatchListView(ListAPIView):
+class TrailMakingListView(ListAPIView):
     def get(self,request):
         return JsonResponse({"error":"under developemnt"},status=status.HTTP_400_BAD_REQUEST)
 
 
 class PictureObjectMatchCreateView(CreateAPIView):
-    def post(self, request, *args, **kwargs):
-        return JsonResponse({"error":"under developemnt"},status=status.HTTP_400_BAD_REQUEST)
+    serializer_class=PictureObjectMatchingSerializer
+    renderer_classes=(ErrorRenderer,)
+    def post(self, request, uid, tid):
+        serializer=self.serializer_class(data=request.data,context={'user_id': uid,'test_id':tid})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        data=serializer.data
+        return JsonResponse(data,status=status.HTTP_201_CREATED)
 
 class PictureObjectMatchGetUpdateView(RetrieveUpdateAPIView):
     def get(self, request,id):
