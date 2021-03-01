@@ -13,7 +13,7 @@ urlpatterns = [
 
     #request password reset email
     path('password-reset-email',RequestPasswordResetEmailView.as_view(),name='request-reset-email'),
-    path('password-reset-email-verify',VerifyEmail.as_view(),name='email-verify'),
+    path('register-email-verify',VerifyEmail.as_view(),name='email-verify'),
     #validate reset toen and uidb64
     path('password-reset-token-check/<uidb64>/<token>/',PasswordTokenCheckView.as_view(),name='password-reset-confirm'),
     #reset process

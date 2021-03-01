@@ -1,8 +1,11 @@
+from .models import GameTest
+from .serializers import GameTestSerializer
 from django.http.response import JsonResponse
 from django.shortcuts import render
 from django.views import generic
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView, RetrieveUpdateAPIView
-from rest_framework import status
+from rest_framework import serializers, status
+from .models import User
 
 # patient
 # Get api/v1//patient/test_id
@@ -37,16 +40,31 @@ class PatientProfileView(RetrieveUpdateAPIView):
     
     def get(self, request,id):
         return JsonResponse({"error":"under developemnt"},status=status.HTTP_400_BAD_REQUEST)
+
     def patch(self, request, *args, **kwargs):
         return JsonResponse({"error":"under developemnt"},status=status.HTTP_400_BAD_REQUEST)
 
 class TestCreateView(CreateAPIView):
     def post(self,request,uid):
-        return JsonResponse({"error":"under developemnt"},status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            user=User.objects.get(id=uid)
+            if not user.groups.filter(name='patient').exists():
+                return JsonResponse({'error':'User is not a patient'},status=status.HTTP_400_BAD_REQUEST)
+            game_test=GameTest.objects.create(user_id=user.id)
+            
+            return JsonResponse({"user_id":user.id,
+                                "user_name":user.username,
+                                'test_id':game_test.id},status=status.HTTP_201_CREATED)
+
+        except User.DoesNotExist:
+            return JsonResponse({'error':'Patient doest not exist'},status=status.HTTP_400_BAD_REQUEST)
+
+    
 
 
 class TrailMatchCreateView(CreateAPIView):
-    def post(self, request, *args, **kwargs):
+    def post(self, request, uid, tid):
         return JsonResponse({"error":"under developemnt"},status=status.HTTP_400_BAD_REQUEST)
 
 class TrailMatchGetUpdateView(RetrieveUpdateAPIView):
