@@ -1,5 +1,5 @@
 from django.db import models
-from cz3002_backend.authentication.models import User
+from authentication.models import User
 
 
 # Create your models here.

@@ -1,4 +1,4 @@
-from cz3002_backend.authentication.models import User
+from authentication.models import User
 from django.db import models
 from django.db.models.fields.related import ForeignKey
 # Create your views here.
