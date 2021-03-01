@@ -37,3 +37,19 @@ python manage.py runserver 8080
 ```
 $ source .env
 ```
+
+# doc
+Add following to your http header after login
+* Authorization: Bearer [access token] 
+
+access token expire after 5 minutes and require to use fresh to get new access toen
+
+
+All the endpoint require access token except following:
+* register
+* verify email
+* login 
+* password reset email
+* password reset token check
+* change new password
+
