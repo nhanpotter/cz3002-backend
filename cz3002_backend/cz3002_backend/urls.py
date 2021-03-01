@@ -28,6 +28,7 @@ schema_view = get_schema_view(
       contact=openapi.Contact(email="contact@snippets.local"),
       license=openapi.License(name="Apache License"),
    ),
+   # hello
    public=True,
    permission_classes=(permissions.AllowAny,),
 )
@@ -35,7 +36,7 @@ schema_view = get_schema_view(
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/',include('authentication.urls')),
-    path('api/game/',include('game.urls')),
+    path('api/patient/',include('patient.urls')),
     path('api/doctor/',include('doctor.urls')),
     
     #path('swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),

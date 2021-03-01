@@ -1,7 +1,7 @@
 from re import T
 from django.shortcuts import render
 from rest_framework import status, generics, views, permissions
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -25,6 +25,8 @@ from .renderers import ErrorRenderer
 class RegisterView(generics.GenericAPIView):
     serializer_class=RegisterSerializer
     renderer_classes=(ErrorRenderer,)
+    permission_classes=[AllowAny,]
+
 
     def post(self,request):
         #todo add bcrypt to password
@@ -53,6 +55,8 @@ class RegisterView(generics.GenericAPIView):
 
 class VerifyEmail(views.APIView):
     serializer_class=EmailVerificationSerializer
+    permission_classes=[AllowAny,]
+
 
     #allow to manually enter token in api doc
     token_param_config=openapi.Parameter('token',in_=openapi.IN_QUERY,description='enter token',type=openapi.TYPE_STRING)
@@ -74,11 +78,13 @@ class VerifyEmail(views.APIView):
         except jwt.exceptions.DecodeError as e:
             return Response({'error':'Invalid Token'},status=status.HTTP_400_BAD_REQUEST)
 
+
 class LoginAPIView(generics.GenericAPIView):
     #authentication_classes = ()
     #permission_classes = ()
     serializer_class=LoginSerializer
     renderer_classes=(ErrorRenderer,)
+    permission_classes=[AllowAny,]
 
 
     def post(self,request):
@@ -88,6 +94,8 @@ class LoginAPIView(generics.GenericAPIView):
 
 class RequestPasswordResetEmailView(generics.GenericAPIView):
     serializer_class=RequestPasswordResetEmailSerializer
+    permission_classes=[AllowAny,]
+
     def post(self,request):
         serializer =self.serializer_class(data=request.data)
         email = request.data.get('email', '')
@@ -113,6 +121,7 @@ class RequestPasswordResetEmailView(generics.GenericAPIView):
 
 class PasswordTokenCheckView(generics.GenericAPIView):
     #serializer_class = SetNewPasswordSerializer
+    permission_classes=[AllowAny,]
     def get(self, request, uidb64, token):
         try:
             id=smart_str(urlsafe_base64_decode(uidb64))
@@ -132,6 +141,7 @@ class PasswordTokenCheckView(generics.GenericAPIView):
 
 
 class SetNewPasswordView(generics.GenericAPIView):
+    permission_classes=[AllowAny,]
     serializer_class=SetNewPasswordSerializer
 
     def patch(self,request):
