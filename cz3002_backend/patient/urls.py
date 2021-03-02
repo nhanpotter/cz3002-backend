@@ -10,14 +10,14 @@ urlpatterns = [
     #user create his own resource
     path('test/<tid>/trail-making',TrailMakingCreateView.as_view(),name="create-trail-making"),
     #other people use this to access
-    path('<uid>/test/<tid>/trail-making',TrailMakingCreateView.as_view(),name="create-trail-making"),
+    #path('<uid>/test/<tid>/trail-making',TrailMakingCreateView.as_view(),name="create-trail-making"),
 
     #path('<uid>/test/<tid>/trail-making/<gid>',TrailMakingGetUpdateView.as_view(),name="read-update-trail-making"),
     #all test for this game for  a user
     #path('<uid>/test/trail-makings',TrailMakingListView.as_view(),name="read-list-trail-making"),
     
     path('test/<tid>/picture-object-match',PictureObjectMatchCreateView.as_view(),name="create-picture-object-match"),
-    path('<uid>/test/<tid>/picture-object-match',PictureObjectMatchCreateView.as_view(),name="create-picture-object-match"),
+    #path('<uid>/test/<tid>/picture-object-match',PictureObjectMatchCreateView.as_view(),name="create-picture-object-match"),
 
     #path('<uid>/test/<tid>/picture-object-match/<gid>',PictureObjectMatchGetUpdateView.as_view(),name="read-update-picture-object-match"),
     #all test for this game for  a user
