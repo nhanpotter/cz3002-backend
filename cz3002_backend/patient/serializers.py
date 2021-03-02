@@ -5,17 +5,6 @@ from .models import GameTest, Patient, PictureObjectMatchingTest, TrailMakingTes
 from rest_framework import serializers
 from authentication.models import User
 
-class GameTestSerializer(serializers.ModelSerializer):
-    class Meta:
-        model=GameTest
-        fields=['id']
-    
-    def validate(self,attrs):       
-        return attrs
-    
-    def create(self, validated_data):
-        #also has create which doesnot hash, so check_password alsway false in authentication
-        return GameTest.objects.create(**validated_data)
 
 
 class TrailMakingSerializer(serializers.ModelSerializer):
@@ -23,8 +12,6 @@ class TrailMakingSerializer(serializers.ModelSerializer):
     class Meta:
         model=TrailMakingTest
         fields=['id','score','errors','time_taken','date_time_completed','game_test_id']
-
-    
     def validate(self,attrs):
         try:
             user_id=self.context.get("user_id")
@@ -57,14 +44,6 @@ class TrailMakingSerializer(serializers.ModelSerializer):
         validated_data['game_test_id']=test_id
         return TrailMakingTest.objects.create(**validated_data)
 
-
-
-        
-
-
-        
-
-
 class PictureObjectMatchingSerializer(serializers.ModelSerializer):
     game_test_id=serializers.IntegerField(read_only=True)
     class Meta:
@@ -90,7 +69,6 @@ class PictureObjectMatchingSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Invalid test id, please create a new test using /patient/{uid}/test")
         except Patient.DoesNotExist:
             raise serializers.ValidationError("Patient not exist")
-
         return attrs
     
     def create(self, validated_data):
@@ -98,3 +76,17 @@ class PictureObjectMatchingSerializer(serializers.ModelSerializer):
         test_id=self.context.get("test_id")
         validated_data['game_test_id']=test_id
         return PictureObjectMatchingTest.objects.create(**validated_data)
+
+class GameTestSerializer(serializers.ModelSerializer):
+    trail_making = TrailMakingSerializer(many=True,read_only=True,source='trailmakingtest_set')
+    picture_object_matching = PictureObjectMatchingSerializer(many=True,read_only=True,source='pictureobjectmatchingtest_set')
+    
+    class Meta:
+        model=GameTest
+        fields=['id','patient_id','trail_making','picture_object_matching']
+        
+    def validate(self,attrs):
+        pass
+    def get_trail_making(self,game_test):
+        trail_making_test=TrailMakingTest.objects.filter(game_test_id=game_test.id).first()
+        return TrailMakingSerializer(many=True,read_only=True,source='trailmakingtest_set')
