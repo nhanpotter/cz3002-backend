@@ -65,7 +65,6 @@ class VerifyEmail(views.APIView):
     @swagger_auto_schema(manual_parameters=[token_param_config])
     def get(self,request):
         token=request.GET.get('token')
-        print(token)
         try:
             payload=jwt.decode(token,settings.SECRET_KEY,algorithms=["HS256"])
             user=User.objects.get(id=payload['user_id'])

@@ -7,6 +7,7 @@ from django.views import generic
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView, RetrieveUpdateAPIView
 from rest_framework import serializers, status
 from authentication.models import User
+from .models import Patient
 
 # patient
 # Get api/v1//patient/test_id
@@ -46,20 +47,24 @@ class PatientProfileView(RetrieveUpdateAPIView):
         return JsonResponse({"error":"under developemnt"},status=status.HTTP_400_BAD_REQUEST)
 
 class TestCreateView(CreateAPIView):
-    def post(self,request,uid):
-        
+    def post(self,request):
         try:
-            user=User.objects.get(id=uid)
+            user=User.objects.get(id=request.user.id)
             if not user.groups.filter(name='patient').exists():
                 return JsonResponse({'error':'User is not a patient'},status=status.HTTP_400_BAD_REQUEST)
-            game_test=GameTest.objects.create(user_id=user.id)
+            #here should save since patient must have patient object created in register
+            patient=Patient.objects.get(user_id=user.id)
+            game_test=GameTest.objects.create(patient_id=patient.id)
             
             return JsonResponse({"user_id":user.id,
                                 "user_name":user.username,
-                                'test_id':game_test.id},status=status.HTTP_201_CREATED)
+                                'patient_id':patient.id,
+                                'new_test_id':game_test.id},status=status.HTTP_201_CREATED)
 
-        except User.DoesNotExist:
+        except User.DoesNotExist or Patient.DoesNotExist:
             return JsonResponse({'error':'Patient doest not exist'},status=status.HTTP_400_BAD_REQUEST)
+        
+
 
     
 
@@ -67,45 +72,45 @@ class TestCreateView(CreateAPIView):
 class TrailMakingCreateView(CreateAPIView):
     serializer_class=TrailMakingSerializer
     renderer_classes=(ErrorRenderer,)
-    def post(self, request, uid, tid):
-        serializer=self.serializer_class(data=request.data,context={'user_id': uid,'test_id':tid})
+    def post(self, request,tid):        
+        serializer=self.serializer_class(data=request.data,context={'user_id':request.user.id,'test_id':tid})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         data=serializer.data
         return JsonResponse(data,status=status.HTTP_201_CREATED)
 
-class TrailMakingGetUpdateView(RetrieveUpdateAPIView):
-    serializer_class=TrailMakingSerializer
+# class TrailMakingGetUpdateView(RetrieveUpdateAPIView):
+#     serializer_class=TrailMakingSerializer
 
-    def get(self, request,id):
-        return JsonResponse({"error":"under developemnt"},status=status.HTTP_400_BAD_REQUEST)
+#     def get(self, request,id):
+#         return JsonResponse({"error":"under developemnt"},status=status.HTTP_400_BAD_REQUEST)
 
-    def patch(self, request, *args, **kwargs):
-        return JsonResponse({"error":"under developemnt"},status=status.HTTP_400_BAD_REQUEST)
+#     def patch(self, request, *args, **kwargs):
+#         return JsonResponse({"error":"under developemnt"},status=status.HTTP_400_BAD_REQUEST)
 
-class TrailMakingListView(ListAPIView):
-    def get(self,request):
-        return JsonResponse({"error":"under developemnt"},status=status.HTTP_400_BAD_REQUEST)
+# class TrailMakingListView(ListAPIView):
+#     def get(self,request):
+#         return JsonResponse({"error":"under developemnt"},status=status.HTTP_400_BAD_REQUEST)
 
 
 class PictureObjectMatchCreateView(CreateAPIView):
     serializer_class=PictureObjectMatchingSerializer
     renderer_classes=(ErrorRenderer,)
-    def post(self, request, uid, tid):
-        serializer=self.serializer_class(data=request.data,context={'user_id': uid,'test_id':tid})
+    def post(self, request, tid):
+        serializer=self.serializer_class(data=request.data,context={'user_id': request.user.id,'test_id':tid})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         data=serializer.data
         return JsonResponse(data,status=status.HTTP_201_CREATED)
 
-class PictureObjectMatchGetUpdateView(RetrieveUpdateAPIView):
-    def get(self, request,id):
-        pass
-    def patch(self, request, *args, **kwargs):
-        return JsonResponse({"error":"under developemnt"},status=status.HTTP_400_BAD_REQUEST)
+# class PictureObjectMatchGetUpdateView(RetrieveUpdateAPIView):
+#     def get(self, request,id):
+#         pass
+#     def patch(self, request, *args, **kwargs):
+#         return JsonResponse({"error":"under developemnt"},status=status.HTTP_400_BAD_REQUEST)
 
-class PictureObjectMatchListView(ListAPIView):
-    def get(self,request):
-        return JsonResponse({"error":"under developemnt"},status=status.HTTP_400_BAD_REQUEST)
+# class PictureObjectMatchListView(ListAPIView):
+#     def get(self,request):
+#         return JsonResponse({"error":"under developemnt"},status=status.HTTP_400_BAD_REQUEST)
 
 

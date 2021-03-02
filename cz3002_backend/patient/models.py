@@ -17,7 +17,7 @@ class Patient(models.Model):
 
 #user will connect this class
 class GameTest(models.Model):
-    user=models.ForeignKey(User,on_delete=models.CASCADE)
+    patient = models.ForeignKey(Patient,on_delete=models.CASCADE)
 
 
 #this class for inidividual test

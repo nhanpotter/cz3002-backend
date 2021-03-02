@@ -9,7 +9,6 @@ class EmailAuthBackend(ModelBackend):
     def authenticate( request=None, **kwargs):
         email = kwargs['email']
         password = kwargs['password']
-        print("===="+ email)
         try:
             user = User.objects.get(email=email)
             if check_password(password,user.password) is True:

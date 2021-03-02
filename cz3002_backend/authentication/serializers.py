@@ -12,6 +12,8 @@ from django.utils.http import urlsafe_base64_decode,urlsafe_base64_encode
 from .utils import Util
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from django.contrib.auth.models import Group
+from doctor.models import Doctor
+from patient.models import Patient
 class GroupSerializer(serializers.ModelSerializer):    
     class Meta:
         model = Group
@@ -33,16 +35,21 @@ class RegisterSerializer(serializers.ModelSerializer):
     
         user_role=attrs.get('user_role','')
         group=Group.objects.filter(name=user_role).first()
-        print(group)
         if not group:
             raise serializers.ValidationError({'message':'Invalid user_role'})
 
         return attrs
     
     def create(self, validated_data):
-        print(validated_data)
         #also has create which doesnot hash, so check_password alsway false in authentication
-        return User.objects.create_user(**validated_data)
+        user=User.objects.create_user(**validated_data)
+
+        #because circular import, the code cant put in model
+        if validated_data['user_role'] == 'patient':
+            Patient.objects.create(user=user)
+        if validated_data['user_role'] == 'doctor':
+            Doctor.objects.create(user=user)
+        return user
 
 class EmailVerificationSerializer(serializers.ModelSerializer):
     token=serializers.CharField(max_length=1024)
