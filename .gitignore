@@ -1,4 +1,5 @@
 .idea/
+nohup.out
 
 .vscode/*
 !.vscode/settings.json
