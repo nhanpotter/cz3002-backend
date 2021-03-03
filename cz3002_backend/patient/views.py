@@ -18,8 +18,8 @@ from .models import Patient
 to do list
 1. get list of patient
 2 get  patient profile
-x3 doctor access patient test
-x4 doctor access patient test list
+3 doctor access patient test
+4 doctor access patient test list
 5 search patient
 '''
 class PatientRetrieveListView(ListAPIView):

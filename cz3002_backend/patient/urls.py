@@ -10,14 +10,14 @@ urlpatterns = [
     path('new-test/',TestCreateView.as_view(),name="new-test"),
 
     #owner of resource
-    path('test/<tid>/trail-making/',TrailMakingCreateView.as_view(),name="create-trail-making"),
-    path('test/<tid>/picture-object-match/',PictureObjectMatchCreateView.as_view(),name="create-picture-object-match"),
+    path('tests/<tid>/trail-makings/',TrailMakingCreateView.as_view(),name="create-trail-making"),
+    path('tests/<tid>/picture-object-matchs/',PictureObjectMatchCreateView.as_view(),name="create-picture-object-match"),
 
-    path('test/<tid>',GameTestRetrieveOwnerView.as_view(),name="retrieve-test"),
-    path('test/',GameTestRetrieveOwnerListView.as_view(),name="retrieve-test-list"),
+    path('tests/<tid>',GameTestRetrieveOwnerView.as_view(),name="retrieve-test"),
+    path('tests/',GameTestRetrieveOwnerListView.as_view(),name="retrieve-test-list"),
 
     #other people use this to access
-    path('<uid>/test/<tid>',GameTestRetrieveView.as_view(),name="doctor-retrieve-test"),
-    path('<uid>/test/',GameTestRetrieveListView.as_view(),name="doctor-retrieve-test-list"),
+    path('<uid>/tests/<tid>',GameTestRetrieveView.as_view(),name="doctor-retrieve-test"),
+    path('<uid>/tests/',GameTestRetrieveListView.as_view(),name="doctor-retrieve-test-list"),
 
 ]
