@@ -29,6 +29,7 @@ class PatientRetrieveListView(ListAPIView):
     def get(self, request):
         # add pagination 
         query_set=self.get_queryset()
+        print(query_set)
         serializer=self.serializer_class(query_set,many=True)
         data=serializer.data
         return JsonResponse({'patients':data},status=status.HTTP_200_OK)
@@ -48,6 +49,22 @@ class PatientRetrieveView(RetrieveAPIView):
         data=serializer.data
         print(data)
         return JsonResponse(data,status=status.HTTP_200_OK)
+    
+    def get_queryset(self):
+        return User.objects.filter(groups__name='patient')
+
+class PatientSearchListView(ListAPIView):
+    serializer_class = PatientSerializer
+    renderer_classes=(ErrorRenderer,)
+    
+    def get(self, request):
+        # add pagination 
+        query_set=self.get_queryset()
+        username=request.GET.get('username')
+        email=request.GET.get('email')
+        serializer=self.serializer_class(query_set,many=True)
+        data=serializer.data
+        return JsonResponse({'patient_search_result':data},status=status.HTTP_200_OK)
     
     def get_queryset(self):
         return User.objects.filter(groups__name='patient')
