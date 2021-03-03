@@ -1,6 +1,6 @@
 from .renderers import ErrorRenderer
 from .models import GameTest
-from .serializers import GameTestSerializer, TrailMakingSerializer, PictureObjectMatchingSerializer
+from .serializers import GameTestSerializer, PatientSerializer, TrailMakingSerializer, PictureObjectMatchingSerializer
 from django.http.response import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views import generic
@@ -13,12 +13,44 @@ from .models import Patient
 
 #     Get api/v1//patient/<id>/test  //return all test result
 #eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjQ2MjIwNDUxLCJqdGkiOiI4ZTU2N2YxYmJiYzM0MTg4YmZmYTBmYmE5MWZlOGViYiIsInVzZXJfaWQiOjF9._ve0ESa1WjalkoaWCFIrLielNHh5NcjgZpTvsFfBt8E
-class PatientProfileView(RetrieveUpdateAPIView):
-    def get(self, request,id):
-        return JsonResponse({"error":"under developemnt"},status=status.HTTP_400_BAD_REQUEST)
 
-    def patch(self, request, *args, **kwargs):
-        return JsonResponse({"error":"under developemnt"},status=status.HTTP_400_BAD_REQUEST)
+'''
+to do list
+1. get list of patient
+2 get  patient profile
+x3 doctor access patient test
+x4 doctor access patient test list
+5 search patient
+'''
+class PatientRetrieveListView(ListAPIView):
+    serializer_class = PatientSerializer
+    renderer_classes=(ErrorRenderer,)
+    
+    def get(self, request):
+        # add pagination 
+        query_set=self.get_queryset()
+        serializer=self.serializer_class(query_set,many=True)
+        data=serializer.data
+        return JsonResponse({'patients':data},status=status.HTTP_200_OK)
+    
+    def get_queryset(self):
+        return User.objects.filter(groups__name='patient')
+
+class PatientRetrieveView(RetrieveAPIView):
+    serializer_class = PatientSerializer
+    renderer_classes=(ErrorRenderer,)
+    
+    def get(self, request,uid):
+        # add pagination 
+        query_set=self.get_queryset()
+        patient=get_object_or_404(query_set,pk=uid)
+        serializer=self.serializer_class(patient)
+        data=serializer.data
+        print(data)
+        return JsonResponse(data,status=status.HTTP_200_OK)
+    
+    def get_queryset(self):
+        return User.objects.filter(groups__name='patient')
 
 class TestCreateView(CreateAPIView):
     def post(self,request):
@@ -29,7 +61,6 @@ class TestCreateView(CreateAPIView):
             #here should save since patient must have patient object created in register
             patient=Patient.objects.get(user_id=user.id)
             game_test=GameTest.objects.create(patient_id=patient.id)
-            
             return JsonResponse({"user_id":user.id,
                                 "user_name":user.username,
                                 'patient_id':patient.id,
@@ -58,17 +89,14 @@ class PictureObjectMatchCreateView(CreateAPIView):
         data=serializer.data
         return JsonResponse(data,status=status.HTTP_201_CREATED)
 
-class GameTestRetrieveView(RetrieveAPIView):
+class GameTestRetrieveOwnerView(RetrieveAPIView):
     serializer_class = GameTestSerializer
     renderer_classes=(ErrorRenderer,)
-    
    
     def get(self, request, tid):
         query_set=self.get_queryset()
         game_test=get_object_or_404(query_set,pk=tid)
-
         serializer=self.serializer_class(game_test)
-        #serializer.is_valid(raise_exception=True)
         data=serializer.data
         return JsonResponse(data,status=status.HTTP_200_OK)
     
@@ -77,24 +105,50 @@ class GameTestRetrieveView(RetrieveAPIView):
         patient=Patient.objects.get(user_id=user.id)
         return patient.gametest_set.all()
     
-class GameTestRetrieveListView(ListAPIView):
+class GameTestRetrieveOwnerListView(ListAPIView):
     serializer_class = GameTestSerializer
     renderer_classes=(ErrorRenderer,)
     
-   
     def get(self, request):
         query_set=self.get_queryset()
-        data=[]
+        if not query_set.exists():
+            return JsonResponse({'errors':'Not found'},status=status.HTTP_404_NOT_FOUND)
         serializer=self.serializer_class(query_set,many=True)
-
-        #serializer.is_valid(raise_exception=True)
-        return JsonResponse(serializer.data,status=status.HTTP_200_OK,safe=False)
+        print(serializer.data)
+        return JsonResponse({'game_test':serializer.data},status=status.HTTP_200_OK)
     
     def get_queryset(self):
         user = self.request.user
         patient=Patient.objects.get(user_id=user.id)
         return patient.gametest_set.all()
 
+
+
+# other 
+class GameTestRetrieveView(RetrieveAPIView):
+    serializer_class = GameTestSerializer
+    renderer_classes=(ErrorRenderer,)
+   
+    def get(self, request, uid,tid):
+        patient=get_object_or_404(Patient,user_id=uid)
+        query_set=patient.gametest_set.all()
+        game_test=get_object_or_404(query_set,pk=tid)
+        serializer=self.serializer_class(game_test)
+        data=serializer.data
+        return JsonResponse(data,status=status.HTTP_200_OK)
+    
+class GameTestRetrieveListView(ListAPIView):
+    serializer_class = GameTestSerializer
+    renderer_classes=(ErrorRenderer,)
+    
+    def get(self, request, uid):
+        patient=get_object_or_404(Patient,user_id=uid)
+        query_set=patient.gametest_set.all()
+        if not query_set.exists():
+            return JsonResponse({'errors':'Not found'},status=status.HTTP_404_NOT_FOUND)
+        serializer=self.serializer_class(query_set,many=True)
+        data=serializer.data
+        return JsonResponse({'game_test':data},status=status.HTTP_200_OK)
 
 
 
