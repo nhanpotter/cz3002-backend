@@ -90,3 +90,9 @@ class GameTestSerializer(serializers.ModelSerializer):
     def get_trail_making(self,game_test):
         trail_making_test=TrailMakingTest.objects.filter(game_test_id=game_test.id).first()
         return TrailMakingSerializer(many=True,read_only=True,source='trailmakingtest_set')
+
+
+class PatientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=User
+        fields=['id','username','email','phone_number']
