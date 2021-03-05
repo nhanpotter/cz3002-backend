@@ -7,7 +7,7 @@ from django.contrib.auth.models import Group
 
 class UserManager(BaseUserManager):
 
-    def create_user(self, username, email,phone_number,user_role, password=None):
+    def create_user(self, username, email, phone_number, user_role, password=None):
         if username is None:
             raise TypeError('Users should have a username')
         if email is None:
@@ -15,11 +15,16 @@ class UserManager(BaseUserManager):
         if phone_number is None:
             raise TypeError('Users should have a phone number')
 
-        user = self.model(username=username, email=self.normalize_email(email),phone_number=phone_number)
+        user = self.model(username=username, email=self.normalize_email(email),
+                          phone_number=phone_number)
         user.set_password(password)
 
-        #add group
-        group=Group.objects.get(name=user_role)
+        # Set
+        if user_role == 'doctor':
+            user.is_staff = True
+
+        # add group
+        group = Group.objects.get(name=user_role)
         user.save()
         user.groups.add(group)
         
@@ -36,17 +41,20 @@ class UserManager(BaseUserManager):
         return user
 
 class User(AbstractBaseUser, PermissionsMixin):
-    username = models.CharField(max_length=255, unique=True, db_index=True)
+    # Note: username is user's real name
+    username = models.CharField(max_length=255)
     email = models.EmailField(max_length=255, unique=True, db_index=True)
-    phone_number=models.CharField(max_length=32,null=False)
+    phone_number = models.CharField(max_length=32, null=False)
 
     is_verified = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
+    # https://docs.djangoproject.com/en/dev/topics/auth/customizing/#django.contrib.auth.models.CustomUser.USERNAME_FIELD
     USERNAME_FIELD = 'email'
+    # https://docs.djangoproject.com/en/dev/topics/auth/customizing/#django.contrib.auth.models.CustomUser.REQUIRED_FIELDS
     REQUIRED_FIELDS = ['username']
 
     objects = UserManager()
