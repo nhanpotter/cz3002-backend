@@ -12,14 +12,10 @@ from .models import Patient
 #     Get api/v1/patient/<id>/
 
 #     Get api/v1//patient/<id>/test  //return all test result
-#eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjQ2MjIwNDUxLCJqdGkiOiI4ZTU2N2YxYmJiYzM0MTg4YmZmYTBmYmE5MWZlOGViYiIsInVzZXJfaWQiOjF9._ve0ESa1WjalkoaWCFIrLielNHh5NcjgZpTvsFfBt8E
-
 '''
+Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjQ2MjIwNDUxLCJqdGkiOiI4ZTU2N2YxYmJiYzM0MTg4YmZmYTBmYmE5MWZlOGViYiIsInVzZXJfaWQiOjF9._ve0ESa1WjalkoaWCFIrLielNHh5NcjgZpTvsFfBt8E
 to do list
-1. get list of patient
-2 get  patient profile
-3 doctor access patient test
-4 doctor access patient test list
+
 5 search patient
 '''
 class PatientRetrieveListView(ListAPIView):
@@ -70,6 +66,7 @@ class PatientSearchListView(ListAPIView):
         return User.objects.filter(groups__name='patient')
 
 class TestCreateView(CreateAPIView):
+    serializer_class=GameTest
     def post(self,request):
         try:
             user=User.objects.get(id=request.user.id)

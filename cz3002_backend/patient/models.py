@@ -25,7 +25,7 @@ class Game(models.Model):
     score=models.IntegerField()
     errors=models.IntegerField()
     time_taken=models.IntegerField()
-    date_time_completed=models.DateTimeField()
+    date_time_completed=models.IntegerField()
     game_test=models.ForeignKey(GameTest,on_delete=models.CASCADE)
     class Meta:
         abstract = True
