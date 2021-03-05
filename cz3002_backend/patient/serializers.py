@@ -1,14 +1,26 @@
 from django.db import models
 from django.db.models import fields
-from rest_framework.fields import IntegerField, ReadOnlyField
+from rest_framework.fields import DateTimeField, IntegerField, ReadOnlyField
 from .models import GameTest, Patient, PictureObjectMatchingTest, TrailMakingTest
 from rest_framework import serializers
 from authentication.models import User
 
+class UnixEpochDateField(serializers.DateTimeField):
+    def to_representation(self, value):
+        import time
+        try:
+            return int(time.mktime(value.timetuple()))
+        except (AttributeError, TypeError):
+            return None
 
+    def to_internal_value(self, value):
+        import datetime
+        return datetime.datetime.fromtimestamp(int(value))
 
 class TrailMakingSerializer(serializers.ModelSerializer):
     game_test_id=serializers.IntegerField(read_only=True)
+    #date_time_complete=UnixEpochDateField(source='date_time_completed')
+
     class Meta:
         model=TrailMakingTest
         fields=['id','score','errors','time_taken','date_time_completed','game_test_id']
@@ -44,8 +56,12 @@ class TrailMakingSerializer(serializers.ModelSerializer):
         validated_data['game_test_id']=test_id
         return TrailMakingTest.objects.create(**validated_data)
 
+
+
+    
 class PictureObjectMatchingSerializer(serializers.ModelSerializer):
     game_test_id=serializers.IntegerField(read_only=True)
+    #date_time_complete=UnixEpochDateField(source='date_time_completed')
     class Meta:
         model=PictureObjectMatchingTest
         fields=['id','score','errors','time_taken','date_time_completed','game_test_id']
@@ -80,6 +96,7 @@ class PictureObjectMatchingSerializer(serializers.ModelSerializer):
 class GameTestSerializer(serializers.ModelSerializer):
     trail_making = TrailMakingSerializer(many=True,read_only=True,source='trailmakingtest_set')
     picture_object_matching = PictureObjectMatchingSerializer(many=True,read_only=True,source='pictureobjectmatchingtest_set')
+
     
     class Meta:
         model=GameTest
