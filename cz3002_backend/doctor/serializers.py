@@ -8,6 +8,7 @@ class UserSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'phone_number']
+        read_only_fields = ['username', 'email', 'phone_number']
 
 
 class PatientSerializer(ModelSerializer):
