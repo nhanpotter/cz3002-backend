@@ -43,21 +43,35 @@ class WatchListAPIView(APIView):
         if not doctor:
             return Response({'errors': 'doctor not exists'},
                             status=status.HTTP_400_BAD_REQUEST)
-        serializer = UserSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        if 'id' not in request.data:
+            return Response({'errors': 'id not specified'},
+                            status=status.HTTP_400_BAD_REQUEST)
 
-        patient = serializer.validated_data.patient
+        patient_user_id = request.data.get('id')
+        try:
+            patient = Patient.objects.get(user_id=patient_user_id)
+        except Patient.DoesNotExist:
+            return Response({'errors': 'patient is not found'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
         doctor.watchlist.add(patient)
-        return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_201_CREATED)
 
     def delete(self, request):
         doctor = request.user.doctor
         if not doctor:
             return Response({'errors': 'doctor not exists'},
                             status=status.HTTP_400_BAD_REQUEST)
-        serializer = UserSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        if 'id' not in request.data:
+            return Response({'errors': 'id not specified'},
+                            status=status.HTTP_400_BAD_REQUEST)
 
-        patient = serializer.validated_data.patient
+        patient_user_id = request.data.get('id')
+        try:
+            patient = Patient.objects.get(user_id=patient_user_id)
+        except Patient.DoesNotExist:
+            return Response({'errors': 'patient is not found'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
         doctor.watchlist.remove(patient)
         return Response(status=status.HTTP_200_OK)
