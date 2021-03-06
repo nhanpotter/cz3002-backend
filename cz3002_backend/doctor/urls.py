@@ -1,11 +1,6 @@
 from django.urls import path
-from rest_framework import views
-#from .views import 
+from .views import SearchAPIView
+
 urlpatterns = [
-   # path('register',RegisterView.as_view(),name='register'),
-  
-    
-
-
-    
+    path('search/', SearchAPIView.as_view(), name='search'),
 ]
