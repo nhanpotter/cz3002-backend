@@ -11,7 +11,7 @@ from patient.serializers import PatientSerializer
 ERROR_SCHEMA = openapi.Schema(
     type=openapi.TYPE_OBJECT,
     properties={
-        'errors': openapi.Schema(type=openapi.TYPE_STRING, description='error message')
+        'errors': openapi.Schema(type=openapi.TYPE_STRING, title='error message')
     }
 )
 
@@ -63,7 +63,10 @@ class WatchListAPIView(APIView):
 
     @swagger_auto_schema(
         request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'id': openapi.Schema(type=openapi.TYPE_INTEGER, title='user id')
+            }
         ),
         responses={
             200: PatientSerializer(many=True),
@@ -89,6 +92,18 @@ class WatchListAPIView(APIView):
         doctor.watchlist.add(patient)
         return Response(status=status.HTTP_201_CREATED)
 
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'id': openapi.Schema(type=openapi.TYPE_INTEGER, title='user id')
+            }
+        ),
+        responses={
+            200: PatientSerializer(many=True),
+            400: ERROR_SCHEMA
+        }
+    )
     def delete(self, request):
         doctor = request.user.doctor
         if not doctor:
