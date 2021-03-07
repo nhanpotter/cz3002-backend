@@ -1,8 +1,9 @@
-from rest_framework.test import APITestCase
-from authentication.models import User
 from rest_framework import status
-from .models import Doctor
+from rest_framework.test import APITestCase
+
+from authentication.models import User
 from patient.models import Patient
+from .models import Doctor
 
 
 class SearchTestCase(APITestCase):

@@ -1,16 +1,33 @@
 from django.db.models import Q
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from patient.models import Patient
-from .serializers import PatientSerializer, UserSerializer
+from patient.serializers import PatientSerializer
+
+ERROR_SCHEMA = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    properties={
+        'errors': openapi.Schema(type=openapi.TYPE_STRING, description='error message')
+    }
+)
 
 
 class SearchAPIView(APIView):
     """API View to search patients by name or email
     """
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('query', openapi.IN_QUERY, type=openapi.TYPE_STRING)],
+        responses={
+            200: PatientSerializer(many=True),
+            400: ERROR_SCHEMA
+        }
+    )
     def get(self, request):
         query = request.query_params.get('query')
         if not query:
@@ -28,6 +45,12 @@ class WatchListAPIView(APIView):
     """API View to create, retrieve and delete patients from watchlist
     """
 
+    @swagger_auto_schema(
+        responses={
+            200: PatientSerializer(many=True),
+            400: ERROR_SCHEMA
+        }
+    )
     def get(self, request):
         doctor = request.user.doctor
         if not doctor:
@@ -38,6 +61,15 @@ class WatchListAPIView(APIView):
         serializer = PatientSerializer(patient_qs, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT
+        ),
+        responses={
+            200: PatientSerializer(many=True),
+            400: ERROR_SCHEMA
+        }
+    )
     def post(self, request):
         doctor = request.user.doctor
         if not doctor:
