@@ -16,7 +16,7 @@ from .models import User
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'phone_number']
+        fields = ['id', 'username', 'email', 'phone_number', 'birthday']
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -31,24 +31,28 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email', 'username', 'password', "phone_number", 'user_role']
+        fields = ['email', 'username', 'password', "phone_number", 'birthday',
+                  'user_role']
 
-    def validate(self, attrs):
-        email = attrs.get('email', '')
-        username = attrs.get('username', '')
-        phone_number = attrs.get('phone_number', '')
-        if not phone_number.isnumeric():
+    def validate_phone_number(self, value):
+        """Validate phone_number field
+        """
+        if not value.isnumeric():
             raise serializers.ValidationError({'message': 'Invalid phone number'})
 
-        user_role = attrs.get('user_role', '')
-        group = Group.objects.filter(name=user_role).first()
+        return value
+
+    def validate_user_role(self, value):
+        """Validate user_role field.
+        """
+        group = Group.objects.filter(name=value).first()
         if not group:
             raise serializers.ValidationError({'message': 'Invalid user_role'})
 
-        return attrs
+        return value
 
     def create(self, validated_data):
-        # also has create which doesnot hash, so check_password alsway false in authentication
+        # also has create which does not hash, so check_password always false in authentication
         user = User.objects.create_user(**validated_data)
 
         # because circular import, the code cant put in model

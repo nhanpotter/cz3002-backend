@@ -4,15 +4,17 @@ from rest_framework.test import APITestCase
 from authentication.models import User
 from patient.models import Patient
 from .models import Doctor
+import datetime
 
 
 class SearchTestCase(APITestCase):
     endpoint = '/api/doctor/search/'
 
     def setUp(self):
+        birthday = datetime.datetime(2000, 1, 30).date()
         self.user = User.objects.create_user(
             username='Nguyen Tien Nhan', email='tiennhan@example.com',
-            phone_number='123456789', user_role='doctor'
+            birthday=birthday, phone_number='123456789', user_role='doctor'
         )
         Doctor.objects.create(user=self.user)
 
@@ -22,17 +24,17 @@ class SearchTestCase(APITestCase):
         # Create patients
         self.user1 = User.objects.create_user(
             username='Hello Kurt World', email='helloworld@example.com',
-            phone_number='123456789', user_role='patient'
+            birthday=birthday, phone_number='123456789', user_role='patient'
         )
         Patient.objects.create(user=self.user1)
         self.user2 = User.objects.create_user(
             username='Harry Potter', email='potterhead@example.com',
-            phone_number='123456789', user_role='patient'
+            birthday=birthday, phone_number='123456789', user_role='patient'
         )
         Patient.objects.create(user=self.user2)
         self.user3 = User.objects.create_user(
             username='How Are Hello', email='hello@example.com',
-            phone_number='123456789', user_role='patient'
+            birthday=birthday, phone_number='123456789', user_role='patient'
         )
         Patient.objects.create(user=self.user3)
 
@@ -46,13 +48,15 @@ class SearchTestCase(APITestCase):
                         'id': self.user1.id,
                         'username': 'Hello Kurt World',
                         'email': 'helloworld@example.com',
-                        'phone_number': '123456789'
+                        'phone_number': '123456789',
+                        'birthday': '2000-01-30'
                     }},
                     {'user': {
                         'id': self.user3.id,
                         'username': 'How Are Hello',
                         'email': 'hello@example.com',
-                        'phone_number': '123456789'
+                        'phone_number': '123456789',
+                        'birthday': '2000-01-30'
                     }}
                 ]
             ),
@@ -63,7 +67,8 @@ class SearchTestCase(APITestCase):
                         'id': self.user2.id,
                         'username': 'Harry Potter',
                         'email': 'potterhead@example.com',
-                        'phone_number': '123456789'
+                        'phone_number': '123456789',
+                        'birthday': '2000-01-30'
                     }}
                 ]
             )
@@ -88,9 +93,10 @@ class WatchListTestCase(APITestCase):
     endpoint = '/api/doctor/watchlist/'
 
     def setUp(self):
+        birthday = datetime.datetime(2000, 1, 30).date()
         self.user = User.objects.create_user(
             username='Nguyen Tien Nhan', email='tiennhan@example.com',
-            phone_number='123456789', user_role='doctor'
+            birthday=birthday, phone_number='123456789', user_role='doctor'
         )
         self.doctor = Doctor.objects.create(user=self.user)
 
@@ -100,7 +106,7 @@ class WatchListTestCase(APITestCase):
         # Create patients
         self.user1 = User.objects.create_user(
             username='Hello Kurt World', email='helloworld@example.com',
-            phone_number='123456789', user_role='patient'
+            birthday=birthday, phone_number='123456789', user_role='patient'
         )
         self.patient1 = Patient.objects.create(user=self.user1)
         # Add patient1 to watchlist by default
@@ -108,7 +114,7 @@ class WatchListTestCase(APITestCase):
 
         self.user2 = User.objects.create_user(
             username='Harry Potter', email='potterhead@example.com',
-            phone_number='123456789', user_role='patient'
+            birthday=birthday, phone_number='123456789', user_role='patient'
         )
         self.patient2 = Patient.objects.create(user=self.user2)
 
@@ -122,7 +128,8 @@ class WatchListTestCase(APITestCase):
                 'id': self.user1.id,
                 'username': 'Hello Kurt World',
                 'email': 'helloworld@example.com',
-                'phone_number': '123456789'
+                'phone_number': '123456789',
+                'birthday': '2000-01-30'
             }}
         ])
 
@@ -142,13 +149,15 @@ class WatchListTestCase(APITestCase):
                 'id': self.user2.id,
                 'username': 'Harry Potter',
                 'email': 'potterhead@example.com',
-                'phone_number': '123456789'
+                'phone_number': '123456789',
+                'birthday': '2000-01-30'
             }},
             {'user': {
                 'id': self.user1.id,
                 'username': 'Hello Kurt World',
                 'email': 'helloworld@example.com',
-                'phone_number': '123456789'
+                'phone_number': '123456789',
+                'birthday': '2000-01-30'
             }}
         ])
 

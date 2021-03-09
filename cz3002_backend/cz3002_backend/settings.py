@@ -104,7 +104,8 @@ SWAGGER_SETTINGS = {
 }
 REST_FRAMEWORK = {
     'NON_FIELD_ERRORS_KEY': 'error',
-    'DATETIME_FORMAT': "%d/%m/%Y %H:%M:%S",
+    'DATETIME_FORMAT': 'iso-8601',
+    'DATETIME_INPUT_FORMATS': ['iso-8601'],
 
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
