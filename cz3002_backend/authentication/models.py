@@ -1,13 +1,14 @@
-from django.db import models
-# Create your models here.
+import datetime
+
 from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager, PermissionsMixin)
-from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import Group
+from django.db import models
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class UserManager(BaseUserManager):
 
-    def create_user(self, username, email, phone_number, user_role, password=None):
+    def create_user(self, username, email, phone_number, birthday, user_role, password=None):
         if username is None:
             raise TypeError('Users should have a username')
         if email is None:
@@ -16,7 +17,7 @@ class UserManager(BaseUserManager):
             raise TypeError('Users should have a phone number')
 
         user = self.model(username=username, email=self.normalize_email(email),
-                          phone_number=phone_number)
+                          phone_number=phone_number, birthday=birthday)
         user.set_password(password)
 
         # Set
@@ -27,7 +28,7 @@ class UserManager(BaseUserManager):
         group = Group.objects.get(name=user_role)
         user.save()
         user.groups.add(group)
-        
+
         return user
 
     def create_superuser(self, username, email, password=None):
@@ -40,11 +41,13 @@ class UserManager(BaseUserManager):
         user.save()
         return user
 
+
 class User(AbstractBaseUser, PermissionsMixin):
     # Note: username is user's real name
     username = models.CharField(max_length=255)
     email = models.EmailField(max_length=255, unique=True, db_index=True)
     phone_number = models.CharField(max_length=32, null=False)
+    birthday = models.DateField(default=datetime.datetime(1980, 1, 1).date())
 
     is_verified = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
@@ -63,9 +66,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.email
 
     def token(self):
-        token=RefreshToken.for_user(self)
-        return{
+        token = RefreshToken.for_user(self)
+        return {
             "refresh": str(token),
-            "access":str(token.access_token)
+            "access": str(token.access_token)
         }
-
