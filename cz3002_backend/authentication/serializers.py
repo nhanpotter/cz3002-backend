@@ -62,11 +62,12 @@ class LoginSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(max_length=255, min_length=3)
     password = serializers.CharField(max_length=255, min_length=3, write_only=True)
     username = serializers.CharField(max_length=255, min_length=3, read_only=True)
-    tokens = serializers.CharField(max_length=255, min_length=3, read_only=True)
+    access_token = serializers.CharField(max_length=255, min_length=3, read_only=True)
+    refresh_token= serializers.CharField(max_length=255, min_length=3, read_only=True)
 
     class Meta:
         model = User
-        fields = ['email', 'password', 'username', 'tokens']
+        fields = ['email', 'password', 'username', 'access_token','refresh_token']
 
     def validate(self, attrs):
         email = attrs.get('email', '')
@@ -80,11 +81,12 @@ class LoginSerializer(serializers.ModelSerializer):
             raise AuthenticationFailed('Account disabled, contact admin')
         if not user.is_verified:
             raise AuthenticationFailed('Email is not verified')
-
+        token=user.token()
         return {
             'email': user.email,
             'username': user.username,
-            'tokens': user.token
+            'access_token':token['access'],
+            'refresh_token': token['refresh'],      
         }
 
 class RequestPasswordResetEmailSerializer(serializers.Serializer):
