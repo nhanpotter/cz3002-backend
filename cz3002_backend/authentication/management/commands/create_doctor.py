@@ -18,7 +18,7 @@ class Command(BaseCommand):
             user = User.objects.create_user(
                 username=fake.name(), email=fake.email(), phone_number=fake.phone_number(),
                 birthday=fake.date_between(start_date='-50y', end_date='-20y'),
-                user_role='patient', password='password'
+                user_role='doctor', password='password'
             )
             Doctor.objects.create(user=user)
 
