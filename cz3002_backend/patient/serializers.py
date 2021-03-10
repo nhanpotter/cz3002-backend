@@ -120,3 +120,16 @@ class PatientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Patient
         fields = ['user']
+
+
+class SearchPatientSerializer(PatientSerializer):
+    added_to_watchlist = serializers.SerializerMethodField()
+
+    def get_added_to_watchlist(self, obj):
+        doctor = self.context.get('doctor')
+        if not doctor:
+            return False
+        return obj in doctor.watchlist.all()
+
+    class Meta(PatientSerializer.Meta):
+        fields = PatientSerializer.Meta.fields + ['added_to_watchlist']
