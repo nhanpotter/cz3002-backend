@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from patient.models import Patient
-from patient.serializers import PatientSerializer
+from patient.serializers import PatientSerializer, SearchPatientSerializer
 
 ERROR_SCHEMA = openapi.Schema(
     type=openapi.TYPE_OBJECT,
@@ -24,7 +24,7 @@ class SearchAPIView(APIView):
         manual_parameters=[
             openapi.Parameter('query', openapi.IN_QUERY, type=openapi.TYPE_STRING)],
         responses={
-            200: PatientSerializer(many=True),
+            200: SearchPatientSerializer(many=True),
             400: ERROR_SCHEMA
         }
     )
@@ -37,7 +37,9 @@ class SearchAPIView(APIView):
         filter_qs = patient_qs.filter(
             Q(user__username__icontains=query) | Q(user__email__icontains=query))
 
-        serializer = PatientSerializer(filter_qs, many=True)
+        doctor = request.user.doctor
+        serializer = SearchPatientSerializer(filter_qs, many=True,
+                                             context={'doctor': doctor})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 

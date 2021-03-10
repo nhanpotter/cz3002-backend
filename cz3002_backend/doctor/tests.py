@@ -16,7 +16,7 @@ class SearchTestCase(APITestCase):
             username='Nguyen Tien Nhan', email='tiennhan@example.com',
             birthday=birthday, phone_number='123456789', user_role='doctor'
         )
-        Doctor.objects.create(user=self.user)
+        doctor = Doctor.objects.create(user=self.user)
 
         # Force authentication
         self.client.force_authenticate(user=self.user)
@@ -26,7 +26,9 @@ class SearchTestCase(APITestCase):
             username='Hello Kurt World', email='helloworld@example.com',
             birthday=birthday, phone_number='123456789', user_role='patient'
         )
-        Patient.objects.create(user=self.user1)
+        patient1 = Patient.objects.create(user=self.user1)
+        # Add patient1 to doctor watchlist
+        doctor.watchlist.add(patient1)
         self.user2 = User.objects.create_user(
             username='Harry Potter', email='potterhead@example.com',
             birthday=birthday, phone_number='123456789', user_role='patient'
@@ -44,32 +46,41 @@ class SearchTestCase(APITestCase):
             (
                 {'query': 'hello'},
                 [
-                    {'user': {
-                        'id': self.user1.id,
-                        'username': 'Hello Kurt World',
-                        'email': 'helloworld@example.com',
-                        'phone_number': '123456789',
-                        'birthday': '2000-01-30'
-                    }},
-                    {'user': {
-                        'id': self.user3.id,
-                        'username': 'How Are Hello',
-                        'email': 'hello@example.com',
-                        'phone_number': '123456789',
-                        'birthday': '2000-01-30'
-                    }}
+                    {
+                        'user': {
+                            'id': self.user1.id,
+                            'username': 'Hello Kurt World',
+                            'email': 'helloworld@example.com',
+                            'phone_number': '123456789',
+                            'birthday': '2000-01-30'
+                        },
+                        'added_to_watchlist': True
+                    },
+                    {
+                        'user': {
+                            'id': self.user3.id,
+                            'username': 'How Are Hello',
+                            'email': 'hello@example.com',
+                            'phone_number': '123456789',
+                            'birthday': '2000-01-30'
+                        },
+                        'added_to_watchlist': False
+                    }
                 ]
             ),
             (
                 {'query': 'potterhead@example.com'},
                 [
-                    {'user': {
-                        'id': self.user2.id,
-                        'username': 'Harry Potter',
-                        'email': 'potterhead@example.com',
-                        'phone_number': '123456789',
-                        'birthday': '2000-01-30'
-                    }}
+                    {
+                        'user': {
+                            'id': self.user2.id,
+                            'username': 'Harry Potter',
+                            'email': 'potterhead@example.com',
+                            'phone_number': '123456789',
+                            'birthday': '2000-01-30'
+                        },
+                        'added_to_watchlist': False
+                    }
                 ]
             )
         ]
