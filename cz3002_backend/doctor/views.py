@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 
 from patient.models import Patient
 from patient.serializers import PatientSerializer, SearchPatientSerializer
+from .serializers import DoctorProfileSerializer
 
 ERROR_SCHEMA = openapi.Schema(
     type=openapi.TYPE_OBJECT,
@@ -124,3 +125,41 @@ class WatchListAPIView(APIView):
 
         doctor.watchlist.remove(patient)
         return Response(status=status.HTTP_200_OK)
+
+
+class DoctorProfileAPIView(APIView):
+    """Get, update doctor profile API.
+    """
+
+    @swagger_auto_schema(
+        responses={
+            200: DoctorProfileSerializer(),
+            400: ERROR_SCHEMA
+        }
+    )
+    def get(self, request):
+        doctor = request.user.doctor
+        if not doctor:
+            return Response({'errors': 'doctor not exists'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        serializer = DoctorProfileSerializer(doctor)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        request_body=DoctorProfileSerializer(),
+        responses={
+            200: DoctorProfileSerializer(),
+            400: ERROR_SCHEMA
+        }
+    )
+    def post(self, request):
+        doctor = request.user.doctor
+        if not doctor:
+            return Response({'errors': 'doctor not exists'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        serializer = DoctorProfileSerializer(doctor, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
