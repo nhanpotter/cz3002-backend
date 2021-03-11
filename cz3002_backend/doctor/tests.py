@@ -196,3 +196,63 @@ class WatchListTestCase(APITestCase):
         }
         response = self.client.delete(self.endpoint, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class DoctorProfileTestCase(APITestCase):
+    endpoint = '/api/doctor/profile/'
+
+    def setUp(self):
+        birthday = datetime.datetime(2000, 1, 30).date()
+        self.user = User.objects.create_user(
+            username='Nguyen Tien Nhan', email='tiennhan@example.com',
+            birthday=birthday, phone_number='123456789', user_role='doctor'
+        )
+        self.doctor = Doctor.objects.create(user=self.user, working_address='NTU')
+
+        # Force authentication
+        self.client.force_authenticate(user=self.user)
+
+    def test_get(self):
+        response = self.client.get(self.endpoint)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, {
+            'user': {
+                'id': self.user.id,
+                'username': 'Nguyen Tien Nhan',
+                'email': 'tiennhan@example.com',
+                'phone_number': '123456789',
+                'birthday': '2000-01-30'
+            },
+            'working_address': 'NTU'
+        })
+
+    def test_post_normal(self):
+        data = {
+            'user': {
+                'username': 'Awesome Nhan',
+                'phone_number': '12345678910',
+                'birthday': '2000-02-01'
+            },
+            'working_address': 'NUS'
+        }
+        response = self.client.post(self.endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.user.username, 'Awesome Nhan')
+        self.assertEqual(self.user.phone_number, '12345678910')
+        self.assertEqual(self.user.birthday, datetime.datetime(2000, 2, 1).date())
+        self.assertEqual(self.doctor.working_address, 'NUS')
+
+    def test_post_omit_fields(self):
+        testcases = [
+            {
+                'user': {
+                    'username': 'Awesome Nhan'
+                },
+            },
+            {
+                'working_address': 'NUS'
+            }
+        ]
+        for data in testcases:
+            response = self.client.post(self.endpoint, data=data, format='json')
+            self.assertEqual(response.status_code, 400)
