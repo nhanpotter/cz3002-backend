@@ -80,7 +80,7 @@ class PictureObjectMatchingSerializer(serializers.ModelSerializer):
             test_id = self.context.get("test_id")
             game_test = GameTest.objects.get(id=test_id, patient_id=patient.id)
             if len(PictureObjectMatchingTest.objects.filter(game_test_id=test_id)) != 0:
-                raise serializers.ValidationError("Trail making test already exist")
+                raise serializers.ValidationError("Picture object matching test already exist")
 
         except User.DoesNotExist:
             raise serializers.ValidationError("Patient not exist")
