@@ -265,4 +265,52 @@ class PatientNotOwnerTestCase(APITestCase):
         self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
 
 
+class GameTestCreateResultsTestCase(APITestCase):
+    endpoint = '/api/patients/tests/{tid}/results/'
 
+    def setUp(self):
+        birthday = datetime.datetime(2000, 1, 30).date()
+        self.user = User.objects.create_user(
+            username='Hello Kurt World', email='helloworld@example.com',
+            birthday=birthday, phone_number='123456789', user_role='patient'
+        )
+        self.patient = Patient.objects.create(user=self.user)
+
+        # Force authentication
+        self.client.force_authenticate(user=self.user)
+
+        self.game_test = GameTest.objects.create(patient=self.patient)
+
+    def test_normal(self):
+        data = {
+            'trail_making': {
+                'score': 2,
+                'errors': 11,
+                'time_taken': 1000,
+                'date_time_completed': 2131231212
+            },
+            'picture_object_matching': {
+                'score': 10,
+                'errors': 3,
+                'time_taken': 2000,
+                'date_time_completed': 2131245678
+            }
+        }
+
+        post_resp = self.client.post(
+            self.endpoint.format(tid=self.game_test.id), data=data, format='json')
+        self.assertEqual(post_resp.status_code, status.HTTP_201_CREATED)
+
+        self.assertEqual(TrailMakingTest.objects.count(), 1)
+        trail_making = TrailMakingTest.objects.first()
+        self.assertEqual(trail_making.score, 2)
+        self.assertEqual(trail_making.errors, 11)
+        self.assertEqual(trail_making.time_taken, 1000)
+        self.assertEqual(trail_making.date_time_completed, 2131231212)
+
+        self.assertEqual(PictureObjectMatchingTest.objects.count(), 1)
+        picture_object = PictureObjectMatchingTest.objects.first()
+        self.assertEqual(picture_object.score, 10)
+        self.assertEqual(picture_object.errors, 3)
+        self.assertEqual(picture_object.time_taken, 2000)
+        self.assertEqual(picture_object.date_time_completed, 2131245678)

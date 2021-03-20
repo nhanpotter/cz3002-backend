@@ -7,7 +7,8 @@ from authentication.models import User
 from .models import GameTest
 from .models import Patient
 from .renderers import ErrorRenderer
-from .serializers import GameTestSerializer, PatientSerializer, TrailMakingSerializer, PictureObjectMatchingSerializer
+from .serializers import GameTestSerializer, PatientSerializer, TrailMakingSerializer, PictureObjectMatchingSerializer, \
+    GameTestPostSerializer
 
 # //return patient profile
 #     Get api/v1/patient/<id>/
@@ -165,3 +166,16 @@ class GameTestRetrieveListView(ListAPIView):
         serializer = self.serializer_class(query_set, many=True)
         data = serializer.data
         return JsonResponse({'game_test': data}, status=status.HTTP_200_OK)
+
+
+class GameTestCreateResultsAPIView(CreateAPIView):
+    """API view to post results of all games for a test.
+    """
+    serializer_class = GameTestPostSerializer
+    renderer_classes = (ErrorRenderer,)
+
+    def post(self, request, tid):
+        serializer = self.serializer_class(data=request.data, context={'user_id': request.user.id, 'test_id': tid})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return JsonResponse({}, status=status.HTTP_201_CREATED)
