@@ -33,7 +33,7 @@ class GameTestAdmin(admin.ModelAdmin):
 
 @admin.register(TrailMakingTest)
 class TrailMakingTestAdmin(admin.ModelAdmin):
-    list_display = ('id', 'game_test', 'game_test_patient_user')
+    list_display = ('id', 'game_test', 'game_test_patient_user', 'score', 'errors', 'time_taken')
 
     def game_test_patient_user(self, obj):
         return obj.game_test.patient.user
@@ -43,7 +43,7 @@ class TrailMakingTestAdmin(admin.ModelAdmin):
 
 @admin.register(PictureObjectMatchingTest)
 class PictureObjectMatchingTest(admin.ModelAdmin):
-    list_display = ('id', 'game_test', 'game_test_patient_user')
+    list_display = ('id', 'game_test', 'game_test_patient_user', 'score', 'errors', 'time_taken')
 
     def game_test_patient_user(self, obj):
         return obj.game_test.patient.user
