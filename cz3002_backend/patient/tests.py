@@ -1,5 +1,3 @@
-from django.http import response
-from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 import json
@@ -48,7 +46,16 @@ class PatientOwnerTestCase(APITestCase):
         response=self.client.post(self.new_test_id_url, data={}, format='json')
         response_body=json.loads(response.content)
         self.assertEqual(response_body["new_test_id"],1)
-        
+
+    def test_new_test_id_call_twice(self):
+        GameTest.objects.create(patient=self.patient)
+        _ = self.client.post(self.new_test_id_url, data={}, format='json')
+        response = self.client.post(self.new_test_id_url, data={}, format='json')
+        response_body = json.loads(response.content)
+        self.assertEqual(response_body["new_test_id"], 1)
+        # Check if the new empty game test got deleted
+        self.assertEqual(GameTest.objects.count(), 1)
+        self.assertEqual(GameTest.objects.first().id, 1)
 
     def test_create_picture_object_match(self):
         game_test_id=GameTest.objects.create(patient=self.patient).id

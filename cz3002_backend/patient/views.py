@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
 
 from authentication.models import User
-from .models import GameTest
+from .models import GameTest, TrailMakingTest, PictureObjectMatchingTest
 from .models import Patient
 from .renderers import ErrorRenderer
 from .serializers import GameTestSerializer, PatientSerializer, TrailMakingSerializer, PictureObjectMatchingSerializer, \
@@ -71,7 +71,24 @@ class TestCreateView(CreateAPIView):
                 return JsonResponse({'error': 'User is not a patient'}, status=status.HTTP_400_BAD_REQUEST)
             # here should save since patient must have patient object created in register
             patient = Patient.objects.get(user_id=user.id)
-            game_test = GameTest.objects.create(patient_id=patient.id)
+            # Assume that a test either have both results or no result, then
+            # with logic below, there will always be at most 1 test with no result
+            no_result_game = []
+            game_test_qs = GameTest.objects.filter(patient=patient)
+            for test in game_test_qs:
+                # Find test with either no result or only 1 result
+                trail_making_exist = TrailMakingTest.objects.filter(game_test=test).exists()
+                picture_object_exist = PictureObjectMatchingTest.objects.filter(game_test=test).exists()
+                if not trail_making_exist and not picture_object_exist:
+                    no_result_game.append(test)
+
+            if len(no_result_game) == 0:
+                game_test = GameTest.objects.create(patient_id=patient.id)
+            else:
+                game_test = no_result_game.pop(0)  # get first test with no result
+                for test in no_result_game:  # delete the remaining test with no results
+                    test.delete()
+
             return JsonResponse({"user_id": user.id,
                                  "user_name": user.username,
                                  'patient_id': patient.id,
