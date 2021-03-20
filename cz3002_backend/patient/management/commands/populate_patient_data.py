@@ -35,7 +35,7 @@ class Command(BaseCommand):
                 time_taken=random.randint(20, 200),
                 date_time_completed=current_unix_timestamp_ms
             )
-            TrailMakingTest.objects.create(
+            PictureObjectMatchingTest.objects.create(
                 game_test=game_test,
                 score=random.randint(1, 30),
                 errors=random.randint(0, 20),
