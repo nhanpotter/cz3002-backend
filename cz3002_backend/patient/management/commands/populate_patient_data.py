@@ -43,3 +43,9 @@ class Command(BaseCommand):
                 date_time_completed=current_unix_timestamp_ms
             )
             current_unix_timestamp_ms -= random.randint(15, 30) * day_in_ms
+
+        self.stdout.write(
+            self.style.SUCCESS('Successfully create {} game test for user {}'.format(
+                number_of_test, email
+            ))
+        )
