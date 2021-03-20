@@ -180,6 +180,7 @@ class GameTestRetrieveListView(ListAPIView):
         query_set = patient.gametest_set.all()
         if not query_set.exists():
             return JsonResponse({'errors': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+        query_set = sorted(query_set, key=lambda t: t.trail_making_date_time_completed)
         serializer = self.serializer_class(query_set, many=True)
         data = serializer.data
         return JsonResponse({'game_test': data}, status=status.HTTP_200_OK)

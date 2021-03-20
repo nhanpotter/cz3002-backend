@@ -170,7 +170,7 @@ class PatientOwnerTestCase(APITestCase):
             "score": 19990,
             "errors": 10,
             "time_taken": picture_object_time,
-            "date_time_completed": 1616124042
+            "date_time_completed": 1616100000
         }, format='json')
 
         game_test_id=GameTest.objects.create(patient=self.patient).id

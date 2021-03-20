@@ -19,6 +19,11 @@ class Patient(models.Model):
 class GameTest(models.Model):
     patient = models.ForeignKey(Patient,on_delete=models.CASCADE)
 
+    @property
+    def trail_making_date_time_completed(self):
+        trail_making_test = self.trailmakingtest_set.first()
+        return trail_making_test.date_time_completed
+
 
 #this class for inidividual test
 class Game(models.Model):
