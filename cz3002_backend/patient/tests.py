@@ -1,5 +1,3 @@
-from django.http import response
-from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 import json
@@ -48,7 +46,16 @@ class PatientOwnerTestCase(APITestCase):
         response=self.client.post(self.new_test_id_url, data={}, format='json')
         response_body=json.loads(response.content)
         self.assertEqual(response_body["new_test_id"],1)
-        
+
+    def test_new_test_id_call_twice(self):
+        GameTest.objects.create(patient=self.patient)
+        _ = self.client.post(self.new_test_id_url, data={}, format='json')
+        response = self.client.post(self.new_test_id_url, data={}, format='json')
+        response_body = json.loads(response.content)
+        self.assertEqual(response_body["new_test_id"], 1)
+        # Check if the new empty game test got deleted
+        self.assertEqual(GameTest.objects.count(), 1)
+        self.assertEqual(GameTest.objects.first().id, 1)
 
     def test_create_picture_object_match(self):
         game_test_id=GameTest.objects.create(patient=self.patient).id
@@ -163,7 +170,7 @@ class PatientOwnerTestCase(APITestCase):
             "score": 19990,
             "errors": 10,
             "time_taken": picture_object_time,
-            "date_time_completed": 1616124042
+            "date_time_completed": 1616100000
         }, format='json')
 
         game_test_id=GameTest.objects.create(patient=self.patient).id
@@ -265,4 +272,52 @@ class PatientNotOwnerTestCase(APITestCase):
         self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
 
 
+class GameTestCreateResultsTestCase(APITestCase):
+    endpoint = '/api/patients/tests/{tid}/results/'
 
+    def setUp(self):
+        birthday = datetime.datetime(2000, 1, 30).date()
+        self.user = User.objects.create_user(
+            username='Hello Kurt World', email='helloworld@example.com',
+            birthday=birthday, phone_number='123456789', user_role='patient'
+        )
+        self.patient = Patient.objects.create(user=self.user)
+
+        # Force authentication
+        self.client.force_authenticate(user=self.user)
+
+        self.game_test = GameTest.objects.create(patient=self.patient)
+
+    def test_normal(self):
+        data = {
+            'trail_making': {
+                'score': 2,
+                'errors': 11,
+                'time_taken': 1000,
+                'date_time_completed': 2131231212
+            },
+            'picture_object_matching': {
+                'score': 10,
+                'errors': 3,
+                'time_taken': 2000,
+                'date_time_completed': 2131245678
+            }
+        }
+
+        post_resp = self.client.post(
+            self.endpoint.format(tid=self.game_test.id), data=data, format='json')
+        self.assertEqual(post_resp.status_code, status.HTTP_201_CREATED)
+
+        self.assertEqual(TrailMakingTest.objects.count(), 1)
+        trail_making = TrailMakingTest.objects.first()
+        self.assertEqual(trail_making.score, 2)
+        self.assertEqual(trail_making.errors, 11)
+        self.assertEqual(trail_making.time_taken, 1000)
+        self.assertEqual(trail_making.date_time_completed, 2131231212)
+
+        self.assertEqual(PictureObjectMatchingTest.objects.count(), 1)
+        picture_object = PictureObjectMatchingTest.objects.first()
+        self.assertEqual(picture_object.score, 10)
+        self.assertEqual(picture_object.errors, 3)
+        self.assertEqual(picture_object.time_taken, 2000)
+        self.assertEqual(picture_object.date_time_completed, 2131245678)

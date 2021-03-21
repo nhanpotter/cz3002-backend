@@ -4,10 +4,11 @@ from rest_framework import status
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
 
 from authentication.models import User
-from .models import GameTest
+from .models import GameTest, TrailMakingTest, PictureObjectMatchingTest
 from .models import Patient
 from .renderers import ErrorRenderer
-from .serializers import GameTestSerializer, PatientSerializer, TrailMakingSerializer, PictureObjectMatchingSerializer
+from .serializers import GameTestSerializer, PatientSerializer, TrailMakingSerializer, PictureObjectMatchingSerializer, \
+    GameTestPostSerializer
 
 # //return patient profile
 #     Get api/v1/patient/<id>/
@@ -70,7 +71,24 @@ class TestCreateView(CreateAPIView):
                 return JsonResponse({'error': 'User is not a patient'}, status=status.HTTP_400_BAD_REQUEST)
             # here should save since patient must have patient object created in register
             patient = Patient.objects.get(user_id=user.id)
-            game_test = GameTest.objects.create(patient_id=patient.id)
+            # Assume that a test either have both results or no result, then
+            # with logic below, there will always be at most 1 test with no result
+            no_result_game = []
+            game_test_qs = GameTest.objects.filter(patient=patient)
+            for test in game_test_qs:
+                # Find test with either no result or only 1 result
+                trail_making_exist = TrailMakingTest.objects.filter(game_test=test).exists()
+                picture_object_exist = PictureObjectMatchingTest.objects.filter(game_test=test).exists()
+                if not trail_making_exist and not picture_object_exist:
+                    no_result_game.append(test)
+
+            if len(no_result_game) == 0:
+                game_test = GameTest.objects.create(patient_id=patient.id)
+            else:
+                game_test = no_result_game.pop(0)  # get first test with no result
+                for test in no_result_game:  # delete the remaining test with no results
+                    test.delete()
+
             return JsonResponse({"user_id": user.id,
                                  "user_name": user.username,
                                  'patient_id': patient.id,
@@ -162,6 +180,20 @@ class GameTestRetrieveListView(ListAPIView):
         query_set = patient.gametest_set.all()
         if not query_set.exists():
             return JsonResponse({'errors': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+        query_set = sorted(query_set, key=lambda t: t.trail_making_date_time_completed)
         serializer = self.serializer_class(query_set, many=True)
         data = serializer.data
         return JsonResponse({'game_test': data}, status=status.HTTP_200_OK)
+
+
+class GameTestCreateResultsAPIView(CreateAPIView):
+    """API view to post results of all games for a test.
+    """
+    serializer_class = GameTestPostSerializer
+    renderer_classes = (ErrorRenderer,)
+
+    def post(self, request, tid):
+        serializer = self.serializer_class(data=request.data, context={'user_id': request.user.id, 'test_id': tid})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return JsonResponse({}, status=status.HTTP_201_CREATED)
